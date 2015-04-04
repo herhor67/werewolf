@@ -1,0 +1,141 @@
+options:
+#-----------{ Wiadomość przy śmierci (oryginalna wygląda jak minecraftowa) }-----------#
+	deathmessage: %victim% został zabity przez Werewolf
+#-----------{ Napis na bossbarze }-----------#
+	bossbar: Król Wilkołaków
+
+every second:
+	loop all entities:
+		loop-entity is wolf:
+			loop-entity isn't dog
+			{wilkolak.%loop-entity%} is true:
+				if loop-entity isn't riding {cialo.%loop-entity%}:
+					make loop-entity ride {cialo.%loop-entity%}
+			{noc} is true:
+				{wilkolak.%loop-entity%} is not set:
+					chance of 99%:
+						set {wilkolak.%loop-entity%} to true
+						set loop-entity's max health to 10
+						heal loop-entity
+						spawn skeleton at location of loop-entity
+						set last spawned entity's tool to stone sword
+						set last spawned entity's max health to 10
+						heal last spawned entity
+						set {cialo.%loop-entity%} to last spawned entity
+						set {glowa.%last spawned entity%} to loop-entity
+						set {wilkolak.%last spawned entity%} to true
+						make loop-entity ride last spawned entity
+					else:
+						{wilkolakboss} is not set:
+							set {wilkolak.%loop-entity%} to true
+							set {wilkolakboss} to loop-entity
+							set loop-entity's max health to 100
+							heal loop-entity
+							set loop-entity's helmet to gold helmet
+							spawn wither skeleton at location of loop-entity
+							set last spawned entity's tool to iron sword
+							set last spawned entity's max health to 100
+							heal last spawned entity
+							set {cialo.%loop-entity%} to last spawned entity
+							set {glowa.%last spawned entity%} to loop-entity
+							set {wilkolak.%last spawned entity%} to true
+							make loop-entity ride last spawned entity
+			{noc} is false:
+				{wilkolak.%loop-entity%} is true:
+					light level at loop-entity is greater than 4:
+						vehicle of loop-entity is skeleton:
+							clear {wilkolak.%loop-entity%}
+							set {_mobek} to loop-entity's vehicle
+							delete loop-entity's vehicle
+							clear {wilkolak.%{_mobek}%}
+							set loop-entity's max health to 4
+							heal loop-entity
+
+#========||============================||========#
+#========||   wilkołak jako 1 ciało    ||========#
+#========||============================||========#
+
+on damage:
+	{wilkolak.%victim%} is true:
+		victim is skeleton or wither skeleton:
+			attacker is player:
+				if attacker's tool is gold sword:
+					set the damage to 5
+					damage victim's passenger by 5
+				else if attacker's tool is gold axe:
+					set the damage to 4
+					damage victim's passenger by 4
+				else if attacker's tool is gold pickaxe:
+					set the damage to 3
+					damage victim's passenger by 3
+				else if attacker's tool is gold shovel:
+					set the damage to 2
+					damage victim's passenger by 2
+				else:
+					set the damage to 0.5
+					damage victim's passenger by 0.5
+			else:
+				set {_dmg} to damage
+				damage victim's passenger by {_dmg}
+		victim is wolf:
+			attacker is player:
+				if attacker's tool is gold sword:
+					set the damage to 5
+					damage victim's vehicle by 5
+				else if attacker's tool is gold axe:
+					set the damage to 4
+					damage victim's vehicle by 4
+				else if attacker's tool is gold pickaxe:
+					set the damage to 3
+					damage victim's vehicle by 3
+				else if attacker's tool is gold shovel:
+					set the damage to 2
+					damage victim's vehicle by 2
+				else:
+					damage victim by 0.5
+					damage victim's vehicle by 0.5
+			else:
+				set {_dmg} to damage
+				damage victim's vehicle by {_dmg}
+
+#========||============================||========#
+#========||          Bossbar           ||========#
+#========||============================||========#
+every 5 seconds:
+	{wilkolakboss} is set:
+		set {_zycie} to {wilkolakboss}'s health
+		loop players in radius 50 of {wilkolakboss}:
+			display "{@bossbar}" on bossbar with {_zycie} percent by 5 seconds for loop-player
+
+#========||============================||========#
+#========||    Wiadomość o śmierci     ||========#
+#========||============================||========#
+on death of player:
+	{wilkolak.%attacker%} is true:
+		set the death message to "{@deathmessage}"
+
+on death of skeleton or wither skeleton:
+	kill {glowa.%victim%}
+
+on death of wolf:
+	kill {cialo.%victim%}
+	{wilkolakboss} is victim:
+		clear {wilkolakboss}
+		delete drops
+		drop diamond sword at location of victim
+		drop golden sword at location of victim
+#		broadcast "Grul Filgołaguf skinął!"
+
+#========||============================||========#
+#========||   ustawianie nocy i dnia   ||========#
+#========||============================||========#
+at 20:00:
+	set {noc} to true
+at 6:00:
+	set {noc} to false
+
+on death:
+	wait 1 second
+	clear {glowa.%victim%}
+	clear {cialo.%victim%}
+	clear {wilkolak.%victim%}
