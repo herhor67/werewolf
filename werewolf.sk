@@ -1,3 +1,4 @@
+#hercore werewolf
 options:
 #-----------{ Wiadomość przy śmierci (oryginalna wygląda jak minecraftowa) }-----------#
 	deathmessage: %victim% został zabity przez Werewolf
